@@ -5,6 +5,10 @@ from scipy.io import savemat
 import keyboard
 import time 
 
+from pylsl import StreamInlet, resolve_stream
+
+
+
 #connect to the arduino
 if len(sys.argv) < 2:
     print("Usage:")
@@ -43,6 +47,15 @@ class CRC:
 
     def CRC_check(self, data):
         self.m_crc_accumulator = np.uint16((self.m_crc_accumulator << 8) ^ self.m_crctable[(self.m_crc_accumulator >> 8) ^ data])
+
+# stream_name = "CleverHandStream"
+# streams = resolve_stream('name', stream_name)
+# if(len(streams)==0):
+#     print("no stream found. Exit.")
+#     exit(0)
+
+# inlet = StreamInlet(streams[0])
+
     
 
 #new CRC object
@@ -63,9 +76,22 @@ with serial.Serial(sys.argv[1], 9600, timeout=3) as arduino:
     # np array to store the time
     timestamp = np.array([])
     dt = 0
+
+    # np array to store the EMGdata
+    dataEMG = np.array([])
+    # np array to store the EMGtime
+    timestampEMG = np.array([])
+    
     while(True):
         if keyboard.is_pressed('q'):
             break
+
+        
+        #sample, tsEMG = inlet.pull_chunk()
+        # if(tsEMG):
+        #     dataEMG = np.vstack((dataEMG, sample)) if dataEMG.size else np.array(sample)
+        #     timestampEMG = np.concatenate((timestampEMG, tsEMG)) if timestampEMG.size else np.array(tsEMG)
+
         #send 1 byte to the arduino
         arduino.write(d)
         #Send position to the arduino and print in the terminal
@@ -99,12 +125,17 @@ with serial.Serial(sys.argv[1], 9600, timeout=3) as arduino:
         data = np.vstack((data, np.hstack((acc, load)))) if data.size else np.hstack((acc, load))
         timestamp = np.vstack((timestamp, dt)) if timestamp.size else np.array([dt])
         #print the time and data and come back to the beginning of the line
-        print("\rTime: " + str(dt/1000000.) + " Acc: " + str(acc) + "\tLoad: " + str(load), end="                                  ")
+        print("\rTime: " + str(dt/1000000.) + " Acc: " + str(acc) + "\tLoad: " + str(load) + "\tEMG count: " + str(len(dataEMG)), end="                                  ")
 
 print("\nSaving data...")
 #close the serial port
 time.sleep(2)
 arduino.close()
+
 dat = {'data':data, 'timestamp':timestamp}
-name = sys.argv[2]
+name = sys.argv[2]+".mat"
+savemat(name, dat)
+
+dat = {'data':dataEMG, 'timestamp':timestampEMG}
+name = sys.argv[2]+"EMG.mat"
 savemat(name, dat)
