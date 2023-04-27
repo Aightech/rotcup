@@ -34,3 +34,5 @@
 !/CONTRIBUTING.md
 !/script
 !/script/*
+/script/*.mat
+/script/*.zip

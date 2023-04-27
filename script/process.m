@@ -14,6 +14,10 @@ angles=[0,85,110]+90;
 acceleration = [];
 zci = @(v) find(v(:).*circshift(v(:), [-1 0]) <= 0);  
 
+% w=2*pi/per;
+% C=m*r*w^2
+% C/Acos(phi) = D;
+% C/Asin(phi) = (Iw - K/w);
 
 for i = 1:length(conf)
     for j = 1:length(types)
