@@ -19,9 +19,12 @@ plt.show()
 file = loadmat("pos2_flex.mat")
 data = file["data"]
 time = file["timestamp"]
-acc = data[:, 0:3]
+acc = data[:, 0:3]#proportional to mg with a factor 4
 force = data[:, 3:5]
 offset_force = np.mean(force, axis=0)
+coef=4mg/bit
+
+acc in m/s^2
 
 plt.figure(2)
 plt.plot(time, acc[:,0])
